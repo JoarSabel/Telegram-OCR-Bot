@@ -1,6 +1,6 @@
 import logging
 from typing import NoReturn
-from PIL import Image
+from PIL import Image, ImageOps
 from pytesseract import pytesseract
 from telegram import Bot,Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
@@ -9,7 +9,7 @@ import os
 def processImage(image_path: str) -> str:
     
     image = Image.open(image_path)
-
+    image = ImageOps.invert(image.convert('RGB'))
     text = pytesseract.image_to_string(image)
 
     print(text[:-1])
@@ -69,9 +69,9 @@ async def convert_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 logger.info('Handling image...')
                 file_id = update.message.document.file_id
                 new_file = await context.bot.get_file(file_id)
-                await new_file.download_to_drive(custom_path='assets/image_to_process.png')
+                await new_file.download_to_drive(custom_path='assets/image_to_process.jpg')
             
-                result = processImage(r'assets/image_to_process.png')
+                result = processImage(r'assets/image_to_process.jpg')
                 logger.info('Got this: %s', result)
                 await update.message.reply_text(result)
             else: 
