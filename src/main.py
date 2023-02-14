@@ -1,6 +1,6 @@
 import logging
 from typing import NoReturn
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageEnhance
 from pytesseract import pytesseract
 from telegram import Bot,Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
@@ -8,13 +8,31 @@ import os
 
 def processImage(image_path: str) -> str:    
     image = Image.open(image_path)
-    text = pytesseract.image_to_string(image)
+
+    # Sharpen 
+    enhancer = ImageEnhance.Sharpness(image)
+    res = enhancer.enhance(4) 
+
+    # Improve contrast
+    enhancer = ImageEnhance.Contrast(res)
+    res = enhancer.enhance(2)
+
+    text = pytesseract.image_to_string(res, config='--psm 6 --oem 1')
     return text
 
 def processDarkImage(image_path: str) -> str:
     image = Image.open(image_path)
     image = ImageOps.invert(image.convert('RGB'))
-    text = pytesseract.image_to_string(image)
+    
+    # Sharpen 
+    enhancer = ImageEnhance.Sharpness(image)
+    res = enhancer.enhance(4) 
+
+    # Improve contrast
+    enhancer = ImageEnhance.Contrast(res)
+    res = enhancer.enhance(2)
+
+    text = pytesseract.image_to_string(res)
     return text
 
 # Bot stuff
